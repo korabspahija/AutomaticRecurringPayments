@@ -31,12 +31,6 @@ namespace AutomaticRecurringPayments.Core.DatabaseConfigurations
             builder.Property(x => x.ClientId)
                 .IsRequired();
 
-            builder.Property(x => x.ProductAccessProviderId)
-                .IsRequired();
-
-            builder.Property(x => x.ApplicationId)
-                .IsRequired();
-
             builder.Property(x => x.ParentBraintreeTransactionId);
 
             builder.ToTable("BraintreeTransactions");

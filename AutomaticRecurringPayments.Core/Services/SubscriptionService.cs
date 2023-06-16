@@ -1,4 +1,5 @@
-﻿using AutomaticRecurringPayment.Model.Entities.Subscriptions;
+﻿using AutomaticRecurringPayment.Model.Constants;
+using AutomaticRecurringPayment.Model.Entities.Subscriptions;
 using AutomaticRecurringPayments.Core.Abstractions.Services;
 using AutomaticRecurringPayments.Core.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,23 @@ namespace AutomaticRecurringPayments.Core.Services
         public SubscriptionService(DatabaseContext databaseContext)
         {
             _databaseContext = databaseContext;
+        }
+
+
+        public async Task<IEnumerable<Subscription>> GetBraintreePaymentActiveSubscriptions()
+        {
+            var subscriptions = await _databaseContext.Subscriptions
+                                                             .Include(x => x.LastBraintreeTransaction)
+                                                             .Where(x => x.StatusId == SubscriptionStatusConstants.Active || x.StatusId == SubscriptionStatusConstants.Incomplete)
+                                                             .ToListAsync();
+            //var subscriptions = await _databaseContext.Subscriptions
+            //                                                 .Include(x => x.LastBraintreeTransaction)
+            //                                                 .Where(x => x.StatusId == SubscriptionStatusConstants.Active &&
+            //                                                             x.LastBraintreeTransaction.InsertDateTime.Value.AddMonths(1) > DateTime.UtcNow.AddHours(-12) &&
+            //                                                             x.LastBraintreeTransaction.InsertDateTime.Value.AddMonths(1) < DateTime.UtcNow.AddHours(13))
+            //                                                 .ToListAsync();
+
+            return subscriptions;
         }
 
         public async Task<Subscription> CreateAsync(Subscription subscription, CancellationToken cancellationToken)

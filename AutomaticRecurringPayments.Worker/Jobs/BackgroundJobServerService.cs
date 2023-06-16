@@ -1,4 +1,5 @@
-﻿using AutomaticRecurringPayments.Core.Services;
+﻿using AutomaticRecurringPayments.Core.Interfaces;
+using AutomaticRecurringPayments.Core.Services;
 using Hangfire;
 using Hangfire.SqlServer;
 using System.Data.SqlClient;
@@ -28,9 +29,8 @@ namespace AutomaticRecurringPayments.Worker.Jobs
                 {
                     WorkerCount = 3,
                     Queues = new[] {
-                        "1",
-                        "2",
-                        "3"
+                        "schedule_recurrent_transaction",
+                        "create_transaction"
                     }
                 };
 
@@ -44,7 +44,7 @@ namespace AutomaticRecurringPayments.Worker.Jobs
 
                 var manager = new RecurringJobManager(jobStorage);
 
-                //manager.AddOrUpdate<IExperimentResultJob>(JobQueueConstants.ScheduleExperimentResults, x => x.ScheduleExperimentResults(null), cronExpression: "0 */12 * * *", queue: JobQueueConstants.ScheduleExperimentResults);
+                manager.AddOrUpdate<IBraintreeTransactionJob>("schedule_recurrent_transaction", x => x.ScheduleRecurrentTransaction(null), cronExpression: "0 */12 * * *", queue: "schedule_recurrent_transaction");
             }
 
             return Task.CompletedTask;

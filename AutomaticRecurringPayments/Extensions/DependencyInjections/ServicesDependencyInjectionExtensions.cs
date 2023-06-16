@@ -1,5 +1,6 @@
 ﻿
 using AutomaticRecurringPayments.Core.Abstractions.Services;
+using AutomaticRecurringPayments.Core.JobServices;
 using AutomaticRecurringPayments.Core.Services;
 
 namespace AutomaticRecurringPayments.Extensions.DependencyInjections
@@ -12,6 +13,8 @@ namespace AutomaticRecurringPayments.Extensions.DependencyInjections
             services.AddScoped<IBraintreeTransactionService, BraintreeTransactionService>();
             services.AddScoped<IBraintreeService, BraintreeService>();
             services.AddScoped<ISubscriptionService, SubscriptionService>();
+            services.AddScoped<IBraintreeTransactionJobService, BraintreeTransactionJobService>();
+
         }
     }
 }

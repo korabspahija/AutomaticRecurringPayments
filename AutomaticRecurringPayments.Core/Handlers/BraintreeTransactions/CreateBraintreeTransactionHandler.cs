@@ -15,21 +15,18 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
 {
     public class CreateBraintreeTransactionHandler : IRequestHandler<CreateBraintreeTransactionCommand, CreateBraintreeTransactionResponse>
     {
-        //private readonly IMapper _mapper;
         private readonly IBraintreeTransactionService _braintreeTransactionService;
         private readonly IClientService _clientService;
         private readonly IBraintreeService _braintreeService;
         private readonly ISubscriptionService _subscriptionService;
 
         public CreateBraintreeTransactionHandler(
-            //IMapper mapper,
             IBraintreeTransactionService braintreeTransactionService,
             IClientService clientService,
             IBraintreeService braintreeService,
             ISubscriptionService subscriptionService
             )
         {
-            //_mapper = mapper;
             _braintreeTransactionService = braintreeTransactionService;
             _clientService = clientService;
             _braintreeService = braintreeService;
@@ -144,7 +141,7 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                 AutomaticRecurringPayment.Model.Entities.Subscriptions.Subscription subscription = new AutomaticRecurringPayment.Model.Entities.Subscriptions.Subscription
                 {
                     ClientId = client.Id,
-                    StatusId = SubscriptionStatusConstants.Incomplete,
+                    StatusId = SubscriptionStatusConstants.Active,
                 };
 
                 subscription = await _subscriptionService.CreateAsync(subscription, cancellationToken);

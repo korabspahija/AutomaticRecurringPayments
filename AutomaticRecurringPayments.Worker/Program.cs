@@ -1,21 +1,42 @@
 using Autofac;
 using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
+using AutomaticRecurringPayments.Core.Abstractions.Services;
+using AutomaticRecurringPayments.Core.DatabaseContexts;
+using AutomaticRecurringPayments.Core.Interfaces;
+using AutomaticRecurringPayments.Core.JobServices;
 using AutomaticRecurringPayments.Core.Services;
 using AutomaticRecurringPayments.Worker.Jobs;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 
 namespace AutomaticRecurringPayments.Worker
 {
     public class Program
     {
+        public IConfiguration Configuration { get; }
+     
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddDbContext<DatabaseContext>(builder =>
+            {
+                if (!builder.IsConfigured)
+                {
+                    builder.UseSqlServer("Server=KORAB\\SQLEXPRESS;Database=Automatic.Recurring.Payments;MultipleActiveResultSets=true;Integrated Security=True;TrustServerCertificate=True");
+                }
+            });
+
+            builder.Services.AddScoped<IBraintreeTransactionService, BraintreeTransactionService>();
+            builder.Services.AddScoped<IBraintreeService, BraintreeService>();
+            builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+            builder.Services.AddScoped<IBraintreeTransactionJobService, BraintreeTransactionJobService>();
+            builder.Services.AddScoped<IBraintreeTransactionJob, BraintreeTransactionJob>();
             GlobalConfiguration.Configuration.UseStorage(HangfireSetting.GetDefaultBackgroundJobStorage());
-            builder.Services.StartHangfire(); 
+            builder.Services.StartHangfire();
             builder.Services.AddRazorPages();
 
             var app = builder.Build();

@@ -15,9 +15,7 @@ namespace AutomaticRecurringPayment.Model.Entities.BraintreeTransactions
         public string TransactionId { get; set; }
         public long Amount { get; set; }
         public int? BraintreeTransactionStatusId { get; set; }
-        public int ProductAccessProviderId { get; set; }
         public int ClientId { get; set; }
-        public int ApplicationId { get; set; }
         public int? ParentBraintreeTransactionId { get; set; }
         public bool? RecurringCanceled { get; set; }
         public int? OnDemandStatus { get; set; }

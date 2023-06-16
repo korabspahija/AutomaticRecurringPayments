@@ -11,6 +11,7 @@ namespace AutomaticRecurringPayments.Core.Abstractions.Services
 {
     public interface ISubscriptionService
     {
+        Task<IEnumerable<Subscription>> GetBraintreePaymentActiveSubscriptions();
         Task<Subscription> CreateAsync(Subscription subscription, CancellationToken cancellationToken);
         Task<Subscription> GetByIdAsync(int id);
         Subscription Update(Subscription subscription);

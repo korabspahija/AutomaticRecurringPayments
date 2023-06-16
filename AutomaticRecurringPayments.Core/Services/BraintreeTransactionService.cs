@@ -1,6 +1,10 @@
-﻿using AutomaticRecurringPayment.Model.Entities.BraintreeTransactions;
+﻿using AutomaticRecurringPayment.Model.Constants;
+using AutomaticRecurringPayment.Model.Entities.BraintreeTransactions;
+using AutomaticRecurringPayment.Model.Entities.Subscriptions;
 using AutomaticRecurringPayments.Core.Abstractions.Services;
 using AutomaticRecurringPayments.Core.DatabaseContexts;
+using AutomaticRecurringPayments.Core.Interfaces;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,7 +23,7 @@ namespace AutomaticRecurringPayments.Core.Services
             _databaseContext = databaseContext;
         }
 
-        public async Task<BraintreeTransaction> CreateAsync(BraintreeTransaction braintreeTransaction, CancellationToken cancellationToken)
+        public async Task<BraintreeTransaction> CreateAsync(BraintreeTransaction braintreeTransaction, CancellationToken cancellationToken = default)
         {
             return (await _databaseContext.BraintreeTransactions.AddAsync(braintreeTransaction, cancellationToken)).Entity;
         }
