@@ -11,7 +11,7 @@ namespace AutomaticRecurringPayments.Core.Abstractions.Services
     {
         Task<Client> CreateAsync(Client client, CancellationToken cancellationToken);
         Client Update(Client client);
-        Task<Client> GetByIdAsync(int clientId, CancellationToken cancellationToken);
+        Task<Client> GetByIdAsync(int clientId, CancellationToken cancellationToken = default);
         Task<int> SaveChangesAsync();
     }
 }

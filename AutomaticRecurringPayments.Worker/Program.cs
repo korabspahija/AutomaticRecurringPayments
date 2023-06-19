@@ -32,6 +32,7 @@ namespace AutomaticRecurringPayments.Worker
 
             builder.Services.AddScoped<IBraintreeTransactionService, BraintreeTransactionService>();
             builder.Services.AddScoped<IBraintreeService, BraintreeService>();
+            builder.Services.AddScoped<IClientService, ClientService>();
             builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
             builder.Services.AddScoped<IBraintreeTransactionJobService, BraintreeTransactionJobService>();
             builder.Services.AddScoped<IBraintreeTransactionJob, BraintreeTransactionJob>();

@@ -5,6 +5,9 @@ using AutomaticRecurringPayments.Core.Helpers;
 using AutomaticRecurringPayments.Core.Interfaces;
 using Braintree;
 using Hangfire;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
+using System.Text.RegularExpressions;
 
 namespace AutomaticRecurringPayments.Core.JobServices
 {
@@ -13,16 +16,19 @@ namespace AutomaticRecurringPayments.Core.JobServices
         private readonly ISubscriptionService _subscriptionService;
         private readonly IBraintreeTransactionService _braintreeTransactionService;
         private readonly IBraintreeService _braintreeService;
+        private readonly IClientService _clientService;
 
         public BraintreeTransactionJobService(
             ISubscriptionService subscriptionService,
             IBraintreeTransactionService braintreeTransactionService,
-            IBraintreeService braintreeService
+            IBraintreeService braintreeService,
+            IClientService clientService
             )
         {
             _subscriptionService = subscriptionService;
             _braintreeTransactionService = braintreeTransactionService;
             _braintreeService = braintreeService;
+            _clientService = clientService;
         }
 
 
@@ -57,7 +63,7 @@ namespace AutomaticRecurringPayments.Core.JobServices
                 if (braintreeTransaction.Item1.OnDemandStatus != PaymentOnDemandStatusConstants.Ready)
                     continue;
 
-                new BackgroundJobClient().Schedule<IBraintreeTransactionJob>(x => x.CreateTransaction(braintreeTransaction.transaction.Id, braintreeTransaction.subscriptionId, null),
+                new BackgroundJobClient().Schedule<IBraintreeTransactionJob>(x => x.CreateTransaction(braintreeTransaction.subscriptionId, braintreeTransaction.transaction.Id, null),
                     braintreeTransaction.periodEnd > DateTime.UtcNow ? braintreeTransaction.periodEnd - DateTime.UtcNow : TimeSpan.FromSeconds(1));
 
                 braintreeTransaction.Item1.OnDemandStatus = PaymentOnDemandStatusConstants.RequestScheduled;
@@ -71,7 +77,6 @@ namespace AutomaticRecurringPayments.Core.JobServices
             try
             {
                 AutomaticRecurringPayment.Model.Entities.Subscriptions.Subscription subscription = await _subscriptionService.GetByIdAsync(subscriptionId);
-
                 if (subscription == null)
                     throw new Exception($"Subscription is null. transactionId: {transactionId}");
 
@@ -80,6 +85,14 @@ namespace AutomaticRecurringPayments.Core.JobServices
 
                 if (!subscription.LastBraintreeTransactionId.HasValue)
                     throw new Exception($"Subscription has no transaction: {subscription.Id}");
+
+                var client = await _clientService.GetByIdAsync(subscription.ClientId);
+                if (client == null)
+                    throw new Exception($"Client does not exist: {subscription.ClientId}");
+
+                var amount = await GetTotalAmount(client.ConsumerCode.ToString());
+                if (amount <= 0)
+                    throw new Exception($"Consumer total amount is: {amount}");
 
                 var lastBraintreeTransaction = await _braintreeTransactionService.GetByIdAsync(subscription.LastBraintreeTransactionId.Value);
                 if (lastBraintreeTransaction == null)
@@ -128,7 +141,7 @@ namespace AutomaticRecurringPayments.Core.JobServices
                     //{
                     //    SubmitForSettlement = true,
                     //},
-                    Amount = Convert.ToInt64(lastBraintreeTransaction.Amount / 100)
+                    Amount = amount
                 };
 
                 var newlyCreatedTransactionId = "NotCreated" + Guid.NewGuid().ToString("N");
@@ -154,7 +167,7 @@ namespace AutomaticRecurringPayments.Core.JobServices
                     ClientId = lastBraintreeTransaction.ClientId,
                     PaymentMethodToken = lastBraintreeTransaction.PaymentMethodToken,
                     TransactionId = newlyCreatedTransactionId,
-                    Amount = Convert.ToInt64(newTransaction.Amount * 100),
+                    Amount = Convert.ToInt64(amount * 100),
                     BraintreeTransactionStatusId = TransactionStatusHelper.PrepareBraintreeTransactionStatus(newTransaction?.Status),
                     OnDemandStatus = PaymentOnDemandStatusConstants.Ready,
                     BraintreeCustomerId = lastBraintreeTransaction.BraintreeCustomerId,
@@ -177,6 +190,29 @@ namespace AutomaticRecurringPayments.Core.JobServices
             {
                 throw new Exception($"IBraintreePaymentJob.CreateRecurrentTransaction failed with exception : {ex.Message}");
             }
+        }
+
+        private async Task<decimal> GetTotalAmount(string code)
+        {
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl("http://kartela.kru-prishtina.com/Security/SearchCustomer?code=" + code);
+
+            // Find the element with the desired HTML snippet
+            IWebElement element = driver.FindElement(By.CssSelector("div.form-group p:nth-child(6) span"));
+
+            // Get the inner text of the element, which represents the amount
+            string amountText = element.Text;
+            string amountWithoutSymbol = Regex.Replace(amountText, @"€", string.Empty);
+            string amountWithoutComma = amountWithoutSymbol.Replace(",", ".");
+            // Close the driver
+            driver.Quit();
+
+            var parsed = decimal.TryParse(amountWithoutComma, out decimal amountInDecimal);
+            if (!parsed)
+                return default;
+
+            return amountInDecimal;
         }
     }
 }
