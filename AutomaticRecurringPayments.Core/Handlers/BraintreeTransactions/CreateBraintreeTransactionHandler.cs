@@ -2,14 +2,13 @@
 using AutomaticRecurringPayment.Model.BraintreeTransactions.Queries;
 using AutomaticRecurringPayment.Model.Constants;
 using AutomaticRecurringPayment.Model.Entities.BraintreeTransactions;
-using AutomaticRecurringPayment.Model.Entities.Subscriptions;
 using AutomaticRecurringPayments.Core.Abstractions.Services;
-using AutomaticRecurringPayments.Core.DatabaseContexts;
-using Azure;
 using Braintree;
 using MediatR;
-using AutomaticRecurringPayments.Core.Extensions;
 using AutomaticRecurringPayments.Core.Helpers;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using System.Text.RegularExpressions;
 
 namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
 {
@@ -42,12 +41,19 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
 
             try
             {
+                var client = await _clientService.GetByIdAsync(request.ClientId, cancellationToken);
+                if (client == null)
+                    return null;
+
+                var amount = await GetTotalAmount(client.ConsumerCode.ToString());
+                if (amount <= 0)
+                    return null;
 
                 var transactionRequest = new TransactionRequest
                 {
                     PaymentMethodNonce = request.Nonce,
                     DeviceData = request.DeviceData,
-                    Amount = 10,
+                    Amount = amount,
                     //TransactionSource = "recurring_first",  // TODO: Check this
                     Options = new TransactionOptionsRequest
                     {
@@ -57,9 +63,6 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                 };
 
                 string paymentMethodToken = "";
-                var client = await _clientService.GetByIdAsync(request.ClientId, cancellationToken);
-                if (client == null)
-                    return null;
 
                 var braintreeCustomerResponse = new BraintreeCustomerResponse();
                 braintreeCustomerResponse.Customer = await _braintreeService.GetCustomerAsync(client.BraintreeCustomerId);
@@ -177,6 +180,30 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                 return response;
                 throw;
             }
+        }
+
+        private async Task<decimal> GetTotalAmount(string code)
+        {
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl("http://kartela.kru-prishtina.com/Security/SearchCustomer?code=" + code);
+
+            // Find the element with the desired HTML snippet
+            IWebElement element = driver.FindElement(By.CssSelector("div.form-group p:nth-child(6) span"));
+
+            // Get the inner text of the element, which represents the amount
+            string amountText = element.Text;
+            string amountWithoutSymbol = Regex.Replace(amountText, @"€", string.Empty);
+            string amountWithoutComma = amountWithoutSymbol.Replace(",", ".");
+
+            // Close the driver
+            driver.Quit();
+
+            var parsed = decimal.TryParse(amountWithoutComma, out decimal amountInDecimal);
+            if (!parsed)
+                return default;
+
+            return amountInDecimal;
         }
     }
 }

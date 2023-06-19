@@ -30,7 +30,7 @@ namespace AutomaticRecurringPayments.Core.Services
             return (_databaseContext.Clients.Update(client)).Entity;
         }
 
-        public async Task<Client> GetByIdAsync(int clientId, CancellationToken cancellationToken)
+        public async Task<Client> GetByIdAsync(int clientId, CancellationToken cancellationToken = default)
         {
             return (await _databaseContext.Clients.FirstOrDefaultAsync(x => x.Id == clientId, cancellationToken));
         }
