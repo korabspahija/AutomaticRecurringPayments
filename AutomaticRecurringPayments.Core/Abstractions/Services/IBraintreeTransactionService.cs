@@ -12,6 +12,7 @@ namespace AutomaticRecurringPayments.Core.Abstractions.Services
         Task<BraintreeTransaction> CreateAsync(BraintreeTransaction braintreeTransaction, CancellationToken cancellationToken = default);
         BraintreeTransaction Update(BraintreeTransaction braintreeTransaction);
         Task<BraintreeTransaction> GetByIdAsync(int id);
+        Task<List<BraintreeTransaction>> GetAllAsync();
         Task<int> SaveChangesAsync();
     }
 }

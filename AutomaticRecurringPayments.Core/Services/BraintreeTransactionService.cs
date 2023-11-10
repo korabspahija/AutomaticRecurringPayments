@@ -27,16 +27,21 @@ namespace AutomaticRecurringPayments.Core.Services
         {
             return (await _databaseContext.BraintreeTransactions.AddAsync(braintreeTransaction, cancellationToken)).Entity;
         }
-        
+
         public BraintreeTransaction Update(BraintreeTransaction braintreeTransaction)
         {
             return (_databaseContext.BraintreeTransactions.Update(braintreeTransaction)).Entity;
         }
-        
-        
+
+
         public async Task<BraintreeTransaction> GetByIdAsync(int id)
         {
             return (await _databaseContext.BraintreeTransactions.FirstOrDefaultAsync(x => x.Id == id));
+        }
+
+        public async Task<List<BraintreeTransaction>> GetAllAsync()
+        {
+            return await _databaseContext.BraintreeTransactions.ToListAsync();
         }
 
         public async Task<int> SaveChangesAsync()

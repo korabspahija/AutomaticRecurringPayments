@@ -39,6 +39,7 @@ namespace AutomaticRecurringPayments.Worker
             GlobalConfiguration.Configuration.UseStorage(HangfireSetting.GetDefaultBackgroundJobStorage());
             builder.Services.StartHangfire();
             builder.Services.AddRazorPages();
+            builder.Services.AddHostedService<BraintreeTransactionStateService>();
 
             var app = builder.Build();
 

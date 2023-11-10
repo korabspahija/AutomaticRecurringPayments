@@ -38,7 +38,6 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
         {
             var response = new CreateBraintreeTransactionResponse();
 
-
             try
             {
                 var client = await _clientService.GetByIdAsync(request.ClientId, cancellationToken);
@@ -54,7 +53,6 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                     PaymentMethodNonce = request.Nonce,
                     DeviceData = request.DeviceData,
                     Amount = amount,
-                    //TransactionSource = "recurring_first",  // TODO: Check this
                     Options = new TransactionOptionsRequest
                     {
                         SubmitForSettlement = true,
@@ -132,6 +130,7 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                 success = braintreeTransactionResponse?.Success ?? false;
                 if (success)
                 {
+                    response.Success = true;
                     if (string.IsNullOrWhiteSpace(client.BraintreeCustomerId) && transaction?.CustomerDetails != null)
                     {
                         client.BraintreeCustomerId = transaction.CustomerDetails.Id;
@@ -172,6 +171,7 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
                 // TODO: Add job to call webhook
                 //await SchedulerJob.ScheduleUniqueJobAsync<IBraintreePaymentJob>(x => x.CallWebhookByTransactionId(null, braintreeTransaction.Id, application.PublicId, false, 0), TimeSpan.FromSeconds(0));
 
+                
                 return response;
             }
 
@@ -184,7 +184,7 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
 
         private async Task<decimal> GetTotalAmount(string code)
         {
-            IWebDriver driver = new ChromeDriver();
+            IWebDriver driver = new OpenQA.Selenium.Edge.EdgeDriver();
 
             driver.Navigate().GoToUrl("http://kartela.kru-prishtina.com/Security/SearchCustomer?code=" + code);
 
@@ -195,6 +195,8 @@ namespace AutomaticRecurringPayments.Core.Handlers.BraintreeTransactions
             string amountText = element.Text;
             string amountWithoutSymbol = Regex.Replace(amountText, @"€", string.Empty);
             string amountWithoutComma = amountWithoutSymbol.Replace(",", ".");
+
+            Thread.Sleep(2700);
 
             // Close the driver
             driver.Quit();

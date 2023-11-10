@@ -31,13 +31,16 @@ namespace AutomaticRecurringPayments.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> MakePayment(int id, bool c = false)
+        public async Task<IActionResult> VerifyPayment(int id, bool c = false)
         {
             var braintreeTransaction = await _braintreeTransactionService.GetByIdAsync(id);
             if (braintreeTransaction == null)
                 await Task.FromException(new Exception("braintreeTransaction Not Found"));
 
             var transaction = await _braintreeService.GetTransactionAsync(braintreeTransaction.TransactionId);
+            if (transaction == null)
+                return NotFound();
+
             var subscription = await _subscriptionService.GetByIdAsync(braintreeTransaction.SubscriptionId);
 
             return Ok(true);

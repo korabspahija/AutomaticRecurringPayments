@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutomaticRecurringPayments.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutomaticRecurringPayment.Model", "AutomaticRecurringPayment.Model\AutomaticRecurringPayment.Model.csproj", "{531F1D35-4048-491F-8CAB-921ABF6D5426}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomaticRecurringPayments.Worker", "AutomaticRecurringPayments.Worker\AutomaticRecurringPayments.Worker.csproj", "{80FDBAF9-3617-4DBE-AF85-8C37830E6390}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutomaticRecurringPayments.Worker", "AutomaticRecurringPayments.Worker\AutomaticRecurringPayments.Worker.csproj", "{80FDBAF9-3617-4DBE-AF85-8C37830E6390}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

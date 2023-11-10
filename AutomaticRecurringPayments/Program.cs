@@ -24,7 +24,6 @@ namespace AutomaticRecurringPayments
             {
                 await Console.Out.WriteLineAsync("Done");
             }
-
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

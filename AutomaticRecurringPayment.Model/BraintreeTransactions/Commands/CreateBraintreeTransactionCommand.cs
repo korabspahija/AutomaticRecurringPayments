@@ -7,7 +7,6 @@ namespace AutomaticRecurringPayment.Model.BraintreeTransactions.Commands
     {
         public string Nonce { get; set; }
         public string DeviceData { get; set; }
-        public bool IsRecurring { get; set; }
         public int ClientId { get; set; }
     }
 }

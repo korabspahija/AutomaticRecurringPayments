@@ -11,6 +11,7 @@ namespace AutomaticRecurringPayments.Extensions.DependencyInjections
         {
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
             services.AddTransient<IRequestHandler<CreateBraintreeTransactionCommand, CreateBraintreeTransactionResponse>, CreateBraintreeTransactionHandler>();
+            services.AddTransient<IRequestHandler<RefundBraintreeTransactionCommand, RefundBraintreeTransactionResponse>, RefundBraintreeTransactionHandler>();
 
         }
     }
